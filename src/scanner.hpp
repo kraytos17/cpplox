@@ -1,0 +1,73 @@
+#pragma once
+
+#include <string_view>
+
+enum TokenType {
+    TOKEN_LEFT_PAREN,
+    TOKEN_RIGHT_PAREN,
+    TOKEN_LEFT_BRACE,
+    TOKEN_RIGHT_BRACE,
+    TOKEN_COMMA,
+    TOKEN_DOT,
+    TOKEN_MINUS,
+    TOKEN_PLUS,
+    TOKEN_SEMICOLON,
+    TOKEN_SLASH,
+    TOKEN_STAR,
+    TOKEN_BANG,
+    TOKEN_BANG_EQUAL,
+    TOKEN_EQUAL,
+    TOKEN_EQUAL_EQUAL,
+    TOKEN_GREATER,
+    TOKEN_GREATER_EQUAL,
+    TOKEN_LESS,
+    TOKEN_LESS_EQUAL,
+    TOKEN_IDENTIFIER,
+    TOKEN_STRING,
+    TOKEN_NUMBER,
+    TOKEN_AND,
+    TOKEN_CLASS,
+    TOKEN_ELSE,
+    TOKEN_FALSE,
+    TOKEN_FOR,
+    TOKEN_FUN,
+    TOKEN_IF,
+    TOKEN_NIL,
+    TOKEN_OR,
+    TOKEN_PRINT,
+    TOKEN_RETURN,
+    TOKEN_SUPER,
+    TOKEN_THIS,
+    TOKEN_TRUE,
+    TOKEN_VAR,
+    TOKEN_WHILE,
+    TOKEN_ERROR,
+    TOKEN_EOF,
+};
+
+struct Scanner {
+    const char* start{nullptr};
+    const char* current{nullptr};
+    int line{1};
+
+    // Scanner() = default;
+    explicit Scanner(std::string_view s) : start{s.data()}, current{s.data()} {}
+    ~Scanner() = default;
+};
+
+struct Token {
+    TokenType type;
+    const char* start{nullptr};
+    int length{};
+    int line{};
+
+    Token() = default;
+    ~Token() = default;
+};
+
+namespace Scanners {
+    inline Scanner scanner{""};
+}
+
+void initScanner(std::string_view source);
+Token scanToken();

@@ -20,8 +20,6 @@ struct VM {
     VM() = default;
     ~VM() = default;
 
-    void initVM();
-    void freeVM();
     uint8_t readByte() { return *ip++; }
     Value readConstant() { return chunk->constants.values[readByte()]; }
     void resetStack() { this->top = this->stack; }
@@ -30,4 +28,19 @@ struct VM {
 
     InterpretResult interpret(Chunk* chunk);
     InterpretResult run();
+
+    template<typename Op>
+    void binaryOp(Op op) {
+        Value b = pop();
+        Value a = pop();
+        push(op(a, b));
+    }
 };
+
+namespace VmInstance {
+    inline VM vmInstance{};
+}
+
+void initVM();
+void freeVM();
+InterpretResult interpret(std::string_view source);

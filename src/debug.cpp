@@ -36,6 +36,16 @@ int disassembleInstruction(const Chunk& chunk, int offset) {
     switch (instruction) {
         case OpCode::OP_CONSTANT:
             return constantInstruction("OP_CONSTANT", chunk, offset);
+        case OP_ADD:
+            return simpleInstruction("OP_ADD", offset);
+        case OP_SUBTRACT:
+            return simpleInstruction("OP_SUBTRACT", offset);
+        case OP_MULTIPLY:
+            return simpleInstruction("OP_MULTIPLY", offset);
+        case OP_DIVIDE:
+            return simpleInstruction("OP_DIVIDE", offset);
+        case OpCode::OP_NEGATE:
+            return simpleInstruction("OP_NEGATE", offset);
         case OpCode::OP_RETURN:
             return simpleInstruction("OP_RETURN", offset);
         default:

@@ -1,17 +1,16 @@
 #include "vm.hpp"
-#include <memory>
+#include <functional>
+#include "chunk.hpp"
 #include "common.hpp"
+#include "compiler.hpp"
 #include "debug.hpp"
 #include "value.hpp"
 
-static std::unique_ptr<VM> vmInstance;
-
-void VM::initVM() {
-    vmInstance = std::make_unique<VM>();
-    resetStack();
+void initVM() {
+    VmInstance::vmInstance.resetStack();
 }
 
-void VM::freeVM() { vmInstance.reset(); }
+void freeVM() { }
 
 InterpretResult VM::interpret(Chunk* chunk) {
     this->chunk = chunk;
@@ -23,23 +22,38 @@ InterpretResult VM::run() {
     while (true) {
 #ifdef DEBUG_TRACE_EXECUTION
         std::cout << "        ";
-        for (const auto& value: std::span(this->stack, this->top)) {
+        for (const auto& value: std::span(stack, top)) {
             std::cout << "[ ";
             printValue(value);
             std::cout << " ]";
         }
 
         std::cout << '\n';
-        disassembleInstruction(*this->chunk, static_cast<int>(this->ip - this->chunk->code.data()));
+        disassembleInstruction(*this->chunk, static_cast<int>(ip - chunk->code.data()));
 #endif
         uint8_t instruction = readByte();
         switch (instruction) {
-            case OpCode::OP_CONSTANT: {
+            case OP_CONSTANT: {
                 Value constant = readConstant();
                 push(constant);
                 break;
             }
-            case OpCode::OP_RETURN:
+            case OP_ADD:
+                binaryOp(std::plus<>());
+                break;
+            case OP_SUBTRACT:
+                binaryOp(std::minus<>());
+                break;
+            case OP_MULTIPLY:
+                binaryOp(std::multiplies<>());
+                break;
+            case OP_DIVIDE:
+                binaryOp(std::divides<>());
+                break;
+            case OP_NEGATE:
+                printValue(-pop());
+                break;
+            case OP_RETURN:
                 printValue(pop());
                 std::cout << '\n';
                 return INTERPRET_OK;
@@ -48,11 +62,16 @@ InterpretResult VM::run() {
 }
 
 void VM::push(Value value) {
-    *this->top = value;
-    this->top++;
+    *top = value;
+    top++;
 }
 
 Value VM::pop() {
-    this->top--;
-    return *this->top;
+    top--;
+    return *top;
+}
+
+InterpretResult interpret(std::string_view source) {
+    compile(source);
+    return INTERPRET_OK;
 }
