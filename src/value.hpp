@@ -9,11 +9,11 @@ using Value = double;
 struct ValueArray {
     std::vector<Value> values;
 
-    ValueArray() : values() {}
-    ~ValueArray() { freeValueArray(); }
+    constexpr ValueArray() : values() {}
+    constexpr ~ValueArray() { freeValueArray(); }
 
-    constexpr std::size_t count() const { return values.size(); }
-    constexpr std::size_t capacity() const { return values.capacity(); }
+    [[nodiscard]] constexpr std::size_t count() const { return values.size(); }
+    [[nodiscard]] constexpr std::size_t capacity() const { return values.capacity(); }
 
     void writeValue(Value value);
     void freeValueArray();

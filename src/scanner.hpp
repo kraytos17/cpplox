@@ -1,48 +1,49 @@
 #pragma once
 
+#include <cstdint>
 #include <string_view>
 
-enum TokenType {
-    TOKEN_LEFT_PAREN,
-    TOKEN_RIGHT_PAREN,
-    TOKEN_LEFT_BRACE,
-    TOKEN_RIGHT_BRACE,
-    TOKEN_COMMA,
-    TOKEN_DOT,
-    TOKEN_MINUS,
-    TOKEN_PLUS,
-    TOKEN_SEMICOLON,
-    TOKEN_SLASH,
-    TOKEN_STAR,
-    TOKEN_BANG,
-    TOKEN_BANG_EQUAL,
-    TOKEN_EQUAL,
-    TOKEN_EQUAL_EQUAL,
-    TOKEN_GREATER,
-    TOKEN_GREATER_EQUAL,
-    TOKEN_LESS,
-    TOKEN_LESS_EQUAL,
-    TOKEN_IDENTIFIER,
-    TOKEN_STRING,
-    TOKEN_NUMBER,
-    TOKEN_AND,
-    TOKEN_CLASS,
-    TOKEN_ELSE,
-    TOKEN_FALSE,
-    TOKEN_FOR,
-    TOKEN_FUN,
-    TOKEN_IF,
-    TOKEN_NIL,
-    TOKEN_OR,
-    TOKEN_PRINT,
-    TOKEN_RETURN,
-    TOKEN_SUPER,
-    TOKEN_THIS,
-    TOKEN_TRUE,
-    TOKEN_VAR,
-    TOKEN_WHILE,
-    TOKEN_ERROR,
-    TOKEN_EOF,
+enum class TokenType : uint8_t {
+    LEFT_PAREN,
+    RIGHT_PAREN,
+    LEFT_BRACE,
+    RIGHT_BRACE,
+    COMMA,
+    DOT,
+    MINUS,
+    PLUS,
+    SEMICOLON,
+    SLASH,
+    STAR,
+    BANG,
+    BANG_EQUAL,
+    EQUAL,
+    EQUAL_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+    LESS,
+    LESS_EQUAL,
+    IDENTIFIER,
+    STRING,
+    NUMBER,
+    AND,
+    CLASS,
+    ELSE,
+    FALSE,
+    FOR,
+    FUN,
+    IF,
+    NIL,
+    OR,
+    PRINT,
+    RETURN,
+    SUPER,
+    THIS,
+    TRUE,
+    VAR,
+    WHILE,
+    ERROR,
+    TOK_EOF,
 };
 
 struct Scanner {
@@ -50,9 +51,8 @@ struct Scanner {
     const char* current{nullptr};
     int line{1};
 
-    // Scanner() = default;
-    explicit Scanner(std::string_view s) : start{s.data()}, current{s.data()} {}
-    ~Scanner() = default;
+    constexpr explicit Scanner(std::string_view s) : start{s.data()}, current{s.data()} {}
+    constexpr ~Scanner() = default;
 };
 
 struct Token {
@@ -61,13 +61,13 @@ struct Token {
     int length{};
     int line{};
 
-    Token() = default;
-    ~Token() = default;
+    constexpr Token() = default;
+    constexpr ~Token() = default;
 };
 
 namespace Scanners {
-    inline Scanner scanner{""};
-}
+    inline constinit Scanner scanner{""};
+} // namespace Scanners
 
 void initScanner(std::string_view source);
-Token scanToken();
+[[nodiscard]] Token scanToken();

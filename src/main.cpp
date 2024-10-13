@@ -16,7 +16,7 @@ void repl() {
         }
 
         std::string line{buffer.data()};
-        interpret(line);
+        [[maybe_unused]] auto x = interpret(line);
     }
 }
 
@@ -46,16 +46,17 @@ std::optional<std::string> readFile(const std::string& filepath) {
 
 void runFile(const std::string& filepath) {
     auto source = readFile(filepath);
-    if (!source)
+    if (!source) {
         std::exit(74);
+    }
 
     InterpretResult res = interpret(*source);
     switch (res) {
-        case INTERPRET_COMPILE_ERROR:
+        case InterpretResult::INTERPRET_COMPILE_ERROR:
             std::exit(65);
-        case INTERPRET_RUNTIME_ERROR:
+        case InterpretResult::INTERPRET_RUNTIME_ERROR:
             std::exit(70);
-        case INTERPRET_OK:
+        case InterpretResult::INTERPRET_OK:
             return;
     }
 }

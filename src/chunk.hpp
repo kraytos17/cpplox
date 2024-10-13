@@ -3,7 +3,7 @@
 #include <vector>
 #include "value.hpp"
 
-enum OpCode : uint8_t {
+enum class OpCode : uint8_t {
     OP_CONSTANT,
     OP_ADD,
     OP_SUBTRACT,
@@ -18,11 +18,11 @@ struct Chunk {
     std::vector<uint8_t> code;
     std::vector<int> lines;
 
-    Chunk() : constants(), code(), lines() {}
-    ~Chunk() { freeChunk(); }
+    constexpr Chunk() : constants(), code(), lines() {}
+    constexpr ~Chunk() { freeChunk(); }
 
-    constexpr std::size_t count() const { return code.size(); }
-    constexpr std::size_t capacity() const { return code.capacity(); }
+    [[nodiscard]] constexpr std::size_t count() const { return code.size(); }
+    [[nodiscard]] constexpr std::size_t capacity() const { return code.capacity(); }
 
     void writeChunk(uint8_t byte, int line);
     void freeChunk();

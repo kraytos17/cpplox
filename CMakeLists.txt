@@ -25,4 +25,6 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/vm.cpp
     src/compiler.hpp
     src/compiler.cpp
+    src/scanner.hpp
+    src/scanner.cpp
 )

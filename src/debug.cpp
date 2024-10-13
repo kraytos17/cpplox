@@ -10,12 +10,12 @@ void disassembleChunk(const Chunk& chunk, std::string_view name) {
     }
 }
 
-static int simpleInstruction(std::string_view name, int offset) {
+[[nodiscard]] static int simpleInstruction(std::string_view name, int offset) {
     std::cout << name << '\n';
     return offset + 1;
 }
 
-static int constantInstruction(std::string_view name, const Chunk& chunk, int offset) {
+[[nodiscard]] static int constantInstruction(std::string_view name, const Chunk& chunk, int offset) {
     uint8_t constant = chunk.code[offset + 1];
     std::cout << std::format("{:<10} {:4} '", name, constant);
     printValue(chunk.constants.values[constant]);
@@ -24,7 +24,7 @@ static int constantInstruction(std::string_view name, const Chunk& chunk, int of
     return offset + 2;
 }
 
-int disassembleInstruction(const Chunk& chunk, int offset) {
+[[nodiscard]] int disassembleInstruction(const Chunk& chunk, int offset) {
     std::cout << std::format("{:04} ", offset);
     if (offset > 0 && chunk.lines[offset] == chunk.lines[offset - 1]) {
         std::cout << "   | ";
@@ -33,16 +33,16 @@ int disassembleInstruction(const Chunk& chunk, int offset) {
     }
 
     uint8_t instruction = chunk.code[offset];
-    switch (instruction) {
+    switch (static_cast<OpCode>(instruction)) {
         case OpCode::OP_CONSTANT:
             return constantInstruction("OP_CONSTANT", chunk, offset);
-        case OP_ADD:
+        case OpCode::OP_ADD:
             return simpleInstruction("OP_ADD", offset);
-        case OP_SUBTRACT:
+        case OpCode::OP_SUBTRACT:
             return simpleInstruction("OP_SUBTRACT", offset);
-        case OP_MULTIPLY:
+        case OpCode::OP_MULTIPLY:
             return simpleInstruction("OP_MULTIPLY", offset);
-        case OP_DIVIDE:
+        case OpCode::OP_DIVIDE:
             return simpleInstruction("OP_DIVIDE", offset);
         case OpCode::OP_NEGATE:
             return simpleInstruction("OP_NEGATE", offset);

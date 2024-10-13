@@ -1,28 +1,29 @@
 #include "vm.hpp"
 #include <functional>
+#include <span>
 #include "chunk.hpp"
 #include "common.hpp"
 #include "compiler.hpp"
 #include "debug.hpp"
 #include "value.hpp"
 
-void initVM() {
-    VmInstance::vmInstance.resetStack();
-}
+using namespace VmInstance;
 
-void freeVM() { }
+void initVM() { vmInstance.resetStack(); }
 
-InterpretResult VM::interpret(Chunk* chunk) {
-    this->chunk = chunk;
-    ip = chunk->code.data();
-    return run();
-}
+void freeVM() {}
+
+// InterpretResult VM::interpret(Chunk* chunk) {
+//     this->chunk = chunk;
+//     ip = chunk->code.data();
+//     return run();
+// }
 
 InterpretResult VM::run() {
     while (true) {
 #ifdef DEBUG_TRACE_EXECUTION
         std::cout << "        ";
-        for (const auto& value: std::span(stack, top)) {
+        for (const auto& value: std::span(stack.data(), top)) {
             std::cout << "[ ";
             printValue(value);
             std::cout << " ]";
@@ -32,31 +33,31 @@ InterpretResult VM::run() {
         disassembleInstruction(*this->chunk, static_cast<int>(ip - chunk->code.data()));
 #endif
         uint8_t instruction = readByte();
-        switch (instruction) {
-            case OP_CONSTANT: {
+        switch (static_cast<OpCode>(instruction)) {
+            case OpCode::OP_CONSTANT: {
                 Value constant = readConstant();
                 push(constant);
                 break;
             }
-            case OP_ADD:
+            case OpCode::OP_ADD:
                 binaryOp(std::plus<>());
                 break;
-            case OP_SUBTRACT:
+            case OpCode::OP_SUBTRACT:
                 binaryOp(std::minus<>());
                 break;
-            case OP_MULTIPLY:
+            case OpCode::OP_MULTIPLY:
                 binaryOp(std::multiplies<>());
                 break;
-            case OP_DIVIDE:
+            case OpCode::OP_DIVIDE:
                 binaryOp(std::divides<>());
                 break;
-            case OP_NEGATE:
-                printValue(-pop());
+            case OpCode::OP_NEGATE:
+                push(-pop());
                 break;
-            case OP_RETURN:
+            case OpCode::OP_RETURN:
                 printValue(pop());
                 std::cout << '\n';
-                return INTERPRET_OK;
+                return InterpretResult::INTERPRET_OK;
         }
     }
 }
@@ -72,6 +73,15 @@ Value VM::pop() {
 }
 
 InterpretResult interpret(std::string_view source) {
-    compile(source);
-    return INTERPRET_OK;
+    Chunk chunk{};
+
+    if (!compile(source, &chunk)) {
+        return InterpretResult::INTERPRET_COMPILE_ERROR;
+    }
+
+    vmInstance.chunk = &chunk;
+    vmInstance.ip = vmInstance.chunk->code.data();
+    InterpretResult res = vmInstance.run();
+
+    return res;
 }
