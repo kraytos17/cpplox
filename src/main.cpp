@@ -52,11 +52,11 @@ void runFile(const std::string& filepath) {
 
     InterpretResult res = interpret(*source);
     switch (res) {
-        case InterpretResult::INTERPRET_COMPILE_ERROR:
+        case InterpretResult::compile_error:
             std::exit(65);
-        case InterpretResult::INTERPRET_RUNTIME_ERROR:
+        case InterpretResult::runtime_error:
             std::exit(70);
-        case InterpretResult::INTERPRET_OK:
+        case InterpretResult::ok:
             return;
     }
 }

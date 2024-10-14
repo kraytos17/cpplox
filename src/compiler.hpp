@@ -1,9 +1,33 @@
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include "chunk.hpp"
 #include "scanner.hpp"
+
+enum class Precedence : uint8_t {
+    none,
+    assignment,
+    prec_or,
+    prec_and,
+    equality,
+    comparison,
+    term,
+    factor,
+    unary,
+    call,
+    primary,
+};
+
+using ParseFn = std::function<void()>;
+
+struct ParseRule {
+    std::optional<ParseFn> prefix{};
+    std::optional<ParseFn> infix{};
+    Precedence precedence{};
+};
 
 class Parser {
 public:

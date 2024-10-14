@@ -34,30 +34,30 @@ InterpretResult VM::run() {
 #endif
         uint8_t instruction = readByte();
         switch (static_cast<OpCode>(instruction)) {
-            case OpCode::OP_CONSTANT: {
+            case OpCode::constant: {
                 Value constant = readConstant();
                 push(constant);
                 break;
             }
-            case OpCode::OP_ADD:
+            case OpCode::add:
                 binaryOp(std::plus<>());
                 break;
-            case OpCode::OP_SUBTRACT:
+            case OpCode::subtract:
                 binaryOp(std::minus<>());
                 break;
-            case OpCode::OP_MULTIPLY:
+            case OpCode::multiply:
                 binaryOp(std::multiplies<>());
                 break;
-            case OpCode::OP_DIVIDE:
+            case OpCode::divide:
                 binaryOp(std::divides<>());
                 break;
-            case OpCode::OP_NEGATE:
+            case OpCode::negate:
                 push(-pop());
                 break;
-            case OpCode::OP_RETURN:
+            case OpCode::ret:
                 printValue(pop());
                 std::cout << '\n';
-                return InterpretResult::INTERPRET_OK;
+                return InterpretResult::ok;
         }
     }
 }
@@ -76,7 +76,7 @@ InterpretResult interpret(std::string_view source) {
     Chunk chunk{};
 
     if (!compile(source, &chunk)) {
-        return InterpretResult::INTERPRET_COMPILE_ERROR;
+        return InterpretResult::compile_error;
     }
 
     vmInstance.chunk = &chunk;

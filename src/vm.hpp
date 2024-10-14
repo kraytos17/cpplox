@@ -8,9 +8,9 @@
 constexpr int STACK_MAX = 256;
 
 enum class InterpretResult : uint8_t {
-    INTERPRET_OK,
-    INTERPRET_COMPILE_ERROR,
-    INTERPRET_RUNTIME_ERROR,
+    ok,
+    compile_error,
+    runtime_error,
 };
 
 struct VM {

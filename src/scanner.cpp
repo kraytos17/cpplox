@@ -5,6 +5,10 @@
 
 using namespace Scanners;
 
+void initScanner(std::string_view source) {
+  scanner = Scanner{source};
+}
+
 bool isAtEnd() { return *scanner.current == '\0'; }
 
 Token makeToken(TokenType type) {
@@ -19,7 +23,7 @@ Token makeToken(TokenType type) {
 
 Token errorToken(std::string_view msg) {
     Token token{};
-    token.type = TokenType::ERROR;
+    token.type = TokenType::err;
     token.start = msg.data();
     token.length = static_cast<int>(msg.length());
     token.line = scanner.line;
@@ -95,7 +99,7 @@ Token string() {
     }
 
     advance();
-    return makeToken(TokenType::STRING);
+    return makeToken(TokenType::string);
 }
 
 Token number() {
@@ -110,7 +114,7 @@ Token number() {
         }
     }
 
-    return makeToken(TokenType::NUMBER);
+    return makeToken(TokenType::number);
 }
 
 TokenType checkKeyword(size_t start, size_t remLen, std::string_view remWord, TokenType type) {
@@ -120,58 +124,58 @@ TokenType checkKeyword(size_t start, size_t remLen, std::string_view remWord, To
         return type;
     }
 
-    return TokenType::IDENTIFIER;
+    return TokenType::identifier;
 }
 
 TokenType identType() {
     switch (scanner.start[0]) {
         case 'a':
-            return checkKeyword(1, 2, "nd", TokenType::AND);
+            return checkKeyword(1, 2, "nd", TokenType::tok_and);
         case 'c':
-            return checkKeyword(1, 4, "lass", TokenType::CLASS);
+            return checkKeyword(1, 4, "lass", TokenType::tok_class);
         case 'e':
-            return checkKeyword(1, 3, "lse", TokenType::ELSE);
+            return checkKeyword(1, 3, "lse", TokenType::tok_else);
         case 'f':
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {
                     case 'a':
-                        return checkKeyword(2, 3, "lse", TokenType::FALSE);
+                        return checkKeyword(2, 3, "lse", TokenType::tok_false);
                     case 'o':
-                        return checkKeyword(2, 1, "r", TokenType::FOR);
+                        return checkKeyword(2, 1, "r", TokenType::tok_for);
                     case 'u':
-                        return checkKeyword(2, 1, "n", TokenType::FUN);
+                        return checkKeyword(2, 1, "n", TokenType::fun);
                 }
             }
             break;
         case 'i':
-            return checkKeyword(1, 1, "f", TokenType::IF);
+            return checkKeyword(1, 1, "f", TokenType::tok_if);
         case 'n':
-            return checkKeyword(1, 2, "il", TokenType::NIL);
+            return checkKeyword(1, 2, "il", TokenType::nil);
         case 'o':
-            return checkKeyword(1, 1, "r", TokenType::OR);
+            return checkKeyword(1, 1, "r", TokenType::tok_or);
         case 'p':
-            return checkKeyword(1, 4, "rint", TokenType::PRINT);
+            return checkKeyword(1, 4, "rint", TokenType::tok_print);
         case 'r':
-            return checkKeyword(1, 5, "eturn", TokenType::RETURN);
+            return checkKeyword(1, 5, "eturn", TokenType::tok_ret);
         case 's':
-            return checkKeyword(1, 4, "uper", TokenType::SUPER);
+            return checkKeyword(1, 4, "uper", TokenType::super);
         case 't':
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {
                     case 'h':
-                        return checkKeyword(2, 2, "is", TokenType::THIS);
+                        return checkKeyword(2, 2, "is", TokenType::tok_this);
                     case 'r':
-                        return checkKeyword(2, 2, "ue", TokenType::TRUE);
+                        return checkKeyword(2, 2, "ue", TokenType::tok_true);
                 }
             }
             break;
         case 'v':
-            return checkKeyword(1, 2, "ar", TokenType::VAR);
+            return checkKeyword(1, 2, "ar", TokenType::var);
         case 'w':
-            return checkKeyword(1, 4, "hile", TokenType::WHILE);
+            return checkKeyword(1, 4, "hile", TokenType::tok_while);
     }
 
-    return TokenType::IDENTIFIER;
+    return TokenType::identifier;
 }
 
 Token identifier() {
@@ -186,7 +190,7 @@ Token scanToken() {
     skipWhitespace();
     scanner.start = scanner.current;
     if (isAtEnd()) {
-        return makeToken(TokenType::TOK_EOF);
+        return makeToken(TokenType::eof);
     }
 
     char c = advance();
@@ -200,35 +204,35 @@ Token scanToken() {
 
     switch (c) {
         case '(':
-            return makeToken(TokenType::LEFT_PAREN);
+            return makeToken(TokenType::left_paren);
         case ')':
-            return makeToken(TokenType::RIGHT_PAREN);
+            return makeToken(TokenType::right_paren);
         case '{':
-            return makeToken(TokenType::LEFT_BRACE);
+            return makeToken(TokenType::left_brace);
         case '}':
-            return makeToken(TokenType::RIGHT_BRACE);
+            return makeToken(TokenType::right_brace);
         case ';':
-            return makeToken(TokenType::SEMICOLON);
+            return makeToken(TokenType::semicolon);
         case ',':
-            return makeToken(TokenType::COMMA);
+            return makeToken(TokenType::comma);
         case '.':
-            return makeToken(TokenType::DOT);
+            return makeToken(TokenType::dot);
         case '-':
-            return makeToken(TokenType::MINUS);
+            return makeToken(TokenType::minus);
         case '+':
-            return makeToken(TokenType::PLUS);
+            return makeToken(TokenType::plus);
         case '/':
-            return makeToken(TokenType::SLASH);
+            return makeToken(TokenType::slash);
         case '*':
-            return makeToken(TokenType::STAR);
+            return makeToken(TokenType::star);
         case '!':
-            return makeToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+            return makeToken(match('=') ? TokenType::bang_equal : TokenType::bang);
         case '=':
-            return makeToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+            return makeToken(match('=') ? TokenType::equal_equal : TokenType::equal);
         case '<':
-            return makeToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+            return makeToken(match('=') ? TokenType::less_equal : TokenType::less);
         case '>':
-            return makeToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+            return makeToken(match('=') ? TokenType::greater_equal : TokenType::greater);
         case '"':
             return string();
     }
