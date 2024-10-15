@@ -1,6 +1,7 @@
 #include "debug.hpp"
 #include <format>
 #include <iostream>
+#include "chunk.hpp"
 #include "value.hpp"
 
 void disassembleChunk(const Chunk& chunk, std::string_view name) {
@@ -36,6 +37,12 @@ void disassembleChunk(const Chunk& chunk, std::string_view name) {
     switch (static_cast<OpCode>(instruction)) {
         case OpCode::constant:
             return constantInstruction("constant", chunk, offset);
+        case OpCode::nil:
+            return simpleInstruction("OP_NIL", offset);
+        case OpCode::op_true:
+            return simpleInstruction("OP_TRUE", offset);
+        case OpCode::op_false:
+            return simpleInstruction("OP_FALSE", offset);
         case OpCode::add:
             return simpleInstruction("add", offset);
         case OpCode::subtract:
@@ -44,6 +51,8 @@ void disassembleChunk(const Chunk& chunk, std::string_view name) {
             return simpleInstruction("multiply", offset);
         case OpCode::divide:
             return simpleInstruction("divide", offset);
+        case OpCode::op_not:
+            return simpleInstruction("OP_NOT", offset);
         case OpCode::negate:
             return simpleInstruction("negate", offset);
         case OpCode::ret:

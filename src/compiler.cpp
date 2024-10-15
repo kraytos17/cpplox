@@ -113,6 +113,9 @@ static void unary() {
     TokenType operatorType = parser.getPrev().type;
     parsePrecedence(Precedence::unary);
     switch (operatorType) {
+        case TokenType::bang:
+            emitByte(static_cast<uint8_t>(OpCode::op_not));
+            break;
         case TokenType::minus:
             emitByte(static_cast<uint8_t>(OpCode::negate));
             break;
@@ -127,6 +130,24 @@ static void binary() {
     parsePrecedence(static_cast<Precedence>(static_cast<int>(rule->precedence) + 1));
 
     switch (operatorType) {
+        case TokenType::bang_equal:
+            emitBytes(static_cast<uint8_t>(OpCode::equal), static_cast<uint8_t>(OpCode::op_not));
+            break;
+        case TokenType::equal_equal:
+            emitByte(static_cast<uint8_t>(OpCode::equal));
+            break;
+        case TokenType::greater:
+            emitByte(static_cast<uint8_t>(OpCode::greater));
+            break;
+        case TokenType::greater_equal:
+            emitBytes(static_cast<uint8_t>(OpCode::less), static_cast<uint8_t>(OpCode::op_not));
+            break;
+        case TokenType::less:
+            emitByte(static_cast<uint8_t>(OpCode::less));
+            break;
+        case TokenType::less_equal:
+            emitBytes(static_cast<uint8_t>(OpCode::greater), static_cast<uint8_t>(OpCode::op_not));
+            break;
         case TokenType::plus:
             emitByte(static_cast<uint8_t>(OpCode::add));
             break;
@@ -156,12 +177,28 @@ static void parsePrecedence(Precedence precedence) {
     rule->prefix.value()();
     while (precedence <= getRule(parser.getCurrent().type)->precedence) {
         advance();
-        const auto& rule = getRule(parser.getPrev().type);
-        if (rule->infix.has_value()) {
-            rule->infix.value()();
+        const auto& prec_rule = getRule(parser.getPrev().type);
+        if (prec_rule->infix.has_value()) {
+            prec_rule->infix.value()();
         } else {
             break;
         }
+    }
+}
+
+static void literal() {
+    switch (parser.getPrev().type) {
+        case TokenType::tok_false:
+            emitByte(static_cast<uint8_t>(OpCode::op_false));
+            break;
+        case TokenType::nil:
+            emitByte(static_cast<uint8_t>(OpCode::nil));
+            break;
+        case TokenType::tok_true:
+            emitByte(static_cast<uint8_t>(OpCode::op_true));
+            break;
+        default:
+            return;
     }
 }
 
@@ -180,27 +217,47 @@ bool compile(std::string_view source, Chunk* chunk) {
 }
 
 constexpr auto TokenTypeCount = static_cast<size_t>(TokenType::eof) + 1;
-const std::array<ParseRule, TokenTypeCount> rules{
-    ParseRule{grouping, nullptr, Precedence::none}, ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{unary, binary, Precedence::term},     ParseRule{nullptr, binary, Precedence::term},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, binary, Precedence::factor},
-    ParseRule{nullptr, binary, Precedence::factor}, ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{number, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-    ParseRule{nullptr, nullptr, Precedence::none},  ParseRule{nullptr, nullptr, Precedence::none},
-};
+const std::array<ParseRule, TokenTypeCount> rules = {{
+    {grouping, nullptr, Precedence::none}, // TOKEN_LEFT_PAREN
+    {nullptr, nullptr, Precedence::none}, // TOKEN_RIGHT_PAREN
+    {nullptr, nullptr, Precedence::none}, // TOKEN_LEFT_BRACE
+    {nullptr, nullptr, Precedence::none}, // TOKEN_RIGHT_BRACE
+    {nullptr, nullptr, Precedence::none}, // TOKEN_COMMA
+    {nullptr, nullptr, Precedence::none}, // TOKEN_DOT
+    {unary, binary, Precedence::term}, // TOKEN_MINUS
+    {nullptr, binary, Precedence::term}, // TOKEN_PLUS
+    {nullptr, nullptr, Precedence::none}, // TOKEN_SEMICOLON
+    {nullptr, binary, Precedence::factor}, // TOKEN_SLASH
+    {nullptr, binary, Precedence::factor}, // TOKEN_STAR
+    {unary, nullptr, Precedence::none}, // TOKEN_BANG
+    {nullptr, binary, Precedence::equality}, // TOKEN_BANG_EQUAL
+    {nullptr, nullptr, Precedence::none}, // TOKEN_EQUAL
+    {nullptr, binary, Precedence::equality}, // TOKEN_EQUAL_EQUAL
+    {nullptr, binary, Precedence::comparison}, // TOKEN_GREATER
+    {nullptr, binary, Precedence::comparison}, // TOKEN_GREATER_EQUAL
+    {nullptr, binary, Precedence::comparison}, // TOKEN_LESS
+    {nullptr, binary, Precedence::comparison}, // TOKEN_LESS_EQUAL
+    {nullptr, nullptr, Precedence::none}, // TOKEN_IDENTIFIER
+    {nullptr, nullptr, Precedence::none}, // TOKEN_STRING
+    {number, nullptr, Precedence::none}, // TOKEN_NUMBER
+    {nullptr, nullptr, Precedence::none}, // TOKEN_AND
+    {nullptr, nullptr, Precedence::none}, // TOKEN_CLASS
+    {nullptr, nullptr, Precedence::none}, // TOKEN_ELSE
+    {literal, nullptr, Precedence::none}, // TOKEN_FALSE
+    {nullptr, nullptr, Precedence::none}, // TOKEN_FOR
+    {nullptr, nullptr, Precedence::none}, // TOKEN_FUN
+    {nullptr, nullptr, Precedence::none}, // TOKEN_IF
+    {literal, nullptr, Precedence::none}, // TOKEN_NIL
+    {nullptr, nullptr, Precedence::none}, // TOKEN_OR
+    {nullptr, nullptr, Precedence::none}, // TOKEN_PRINT
+    {nullptr, nullptr, Precedence::none}, // TOKEN_RETURN
+    {nullptr, nullptr, Precedence::none}, // TOKEN_SUPER
+    {nullptr, nullptr, Precedence::none}, // TOKEN_THIS
+    {literal, nullptr, Precedence::none}, // TOKEN_TRUE
+    {nullptr, nullptr, Precedence::none}, // TOKEN_VAR
+    {nullptr, nullptr, Precedence::none}, // TOKEN_WHILE
+    {nullptr, nullptr, Precedence::none}, // TOKEN_ERROR
+    {nullptr, nullptr, Precedence::none}, // TOKEN_EOF
+}};
 
 static const ParseRule* getRule(TokenType type) { return &rules[static_cast<size_t>(type)]; }

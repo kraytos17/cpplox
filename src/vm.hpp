@@ -30,13 +30,6 @@ struct VM {
 
     // [[nodiscard]] InterpretResult interpret(Chunk* chunk);
     [[nodiscard]] InterpretResult run();
-
-    template<typename Op>
-    void binaryOp(Op op) {
-        Value b = pop();
-        Value a = pop();
-        push(op(a, b));
-    }
 };
 
 namespace VmInstance {
