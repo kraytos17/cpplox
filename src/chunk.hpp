@@ -25,8 +25,8 @@ struct Chunk {
     std::vector<uint8_t> code;
     std::vector<int> lines;
 
-    constexpr Chunk() : constants(), code(), lines() {}
-    constexpr ~Chunk() { freeChunk(); }
+    Chunk() : constants(), code(), lines() {}
+    ~Chunk() { freeChunk(); }
 
     [[nodiscard]] constexpr std::size_t count() const noexcept { return code.size(); }
     [[nodiscard]] constexpr std::size_t capacity() const noexcept { return code.capacity(); }

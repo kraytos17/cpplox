@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <format>
 #include <fstream>
+#include <iostream>
 #include <optional>
-#include <ostream>
 #include "vm.hpp"
 
 void repl() {

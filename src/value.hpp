@@ -39,5 +39,5 @@ struct ValueArray {
     void freeValueArray();
 };
 
-bool valuesEq(Value a, Value b);
+inline bool valuesEq(Value a, Value b);
 void printValue(Value value);

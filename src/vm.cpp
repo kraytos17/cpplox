@@ -1,6 +1,8 @@
 #include "vm.hpp"
 #include <cstdarg>
+#include <format>
 #include <functional>
+#include <iostream>
 #include <span>
 #include <string_view>
 #include "chunk.hpp"
@@ -23,10 +25,11 @@ void freeVM() {}
 static void runtimeError(const char* format, ...) {
     va_list args{};
     va_start(args, format);
-    std::string formattedMessage = std::vformat(std::string_view(format), std::make_format_args(args));
+    char buffer[1024];
+    std::vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
 
-    std::cerr << formattedMessage << "\n";
+    std::cerr << buffer << "\n";
     size_t instruction = vmInstance.ip - vmInstance.chunk->code.data() - 1;
     int line = vmInstance.chunk->lines[instruction];
 
