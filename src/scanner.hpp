@@ -52,7 +52,6 @@ struct Scanner {
     int line{1};
 
     constexpr explicit Scanner(std::string_view s) : start{s.data()}, current{s.data()} {}
-    constexpr ~Scanner() = default;
 };
 
 struct Token {
@@ -60,9 +59,6 @@ struct Token {
     const char* start{nullptr};
     int length{};
     int line{};
-
-    constexpr Token() = default;
-    constexpr ~Token() = default;
 };
 
 namespace Scanners {

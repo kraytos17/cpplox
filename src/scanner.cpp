@@ -120,7 +120,7 @@ Token number() {
 TokenType checkKeyword(size_t start, size_t remLen, std::string_view remWord, TokenType type) {
     std::string_view keyword{scanner.start + start, remLen};
 
-    if (scanner.current - scanner.start == start + remLen && keyword == remWord) {
+    if (static_cast<size_t>(scanner.current - scanner.start) == start + remLen && keyword == remWord) {
         return type;
     }
 

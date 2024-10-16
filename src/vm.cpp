@@ -1,5 +1,4 @@
 #include "vm.hpp"
-#include <cstdarg>
 #include <format>
 #include <functional>
 #include <iostream>
@@ -22,19 +21,21 @@ void freeVM() {}
 //     return run();
 // }
 
-static void runtimeError(const char* format, ...) {
-    va_list args{};
-    va_start(args, format);
-    char buffer[1024];
-    std::vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
+static void runtimeError(const std::string& message) {
+    std::string errorMessage = std::format("Runtime Error: {}", message);
+    std::cerr << errorMessage << "\n";
 
-    std::cerr << buffer << "\n";
     size_t instruction = vmInstance.ip - vmInstance.chunk->code.data() - 1;
     int line = vmInstance.chunk->lines[instruction];
 
     std::cerr << std::format("[line {}] in script\n", line);
     vmInstance.resetStack();
+}
+
+template<typename... Args>
+static void formatRuntimeError(const std::string& fmt, Args&&... args) {
+    std::string formattedMessage = std::format(fmt, std::forward<Args>(args)...);
+    runtimeError(formattedMessage);
 }
 
 static Value peek(int distance) { return vmInstance.top[-1 - distance]; }

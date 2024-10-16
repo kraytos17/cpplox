@@ -3,9 +3,6 @@
 #include <iostream>
 #include "inline_decl.hpp"
 
-ValueArray::ValueArray() noexcept : values() {}
-ValueArray::~ValueArray() noexcept { freeValueArray(); }
-
 void ValueArray::writeValue(Value value) { values.push_back(value); }
 
 void ValueArray::freeValueArray() {

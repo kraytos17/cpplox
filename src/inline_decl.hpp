@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <string_view>
+#include "object.hpp"
 #include "value.hpp"
 
 inline constexpr bool isObj(const Value& value) noexcept { return value.type == ValueType::val_obj; }
@@ -52,3 +54,9 @@ inline constexpr double asNumber(const Value& value) {
     assert(isNumber(value) && "Value is not a number.");
     return std::get<double>(value.as);
 }
+
+inline constexpr ObjString* asObjString(const Value& value) { return static_cast<ObjString*>(asObj(value)); }
+
+inline constexpr const char* asCString(const Value& value) { return asObjString(value)->getCString(); }
+
+inline constexpr std::string_view asStringView(const Value& value) { return asObjString(value)->getStringView(); }

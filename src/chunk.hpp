@@ -26,6 +26,7 @@ struct Chunk {
     std::vector<int> lines;
 
     Chunk() : constants(), code(), lines() {}
+    Chunk(const Chunk& other) = default;
     ~Chunk() { freeChunk(); }
 
     [[nodiscard]] constexpr std::size_t count() const noexcept { return code.size(); }

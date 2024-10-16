@@ -3,7 +3,7 @@
 #include <cstdint>
 
 struct Value;
-struct Obj;
+class Obj;
 
 enum class ObjType : uint8_t {
     obj_string,

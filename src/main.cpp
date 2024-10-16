@@ -1,6 +1,5 @@
 #include <array>
 #include <cstddef>
-#include <cstdlib>
 #include <format>
 #include <fstream>
 #include <iostream>

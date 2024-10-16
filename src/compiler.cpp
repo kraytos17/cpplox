@@ -8,6 +8,7 @@
 #include <string_view>
 #include "chunk.hpp"
 #include "common.hpp"
+#include "inline_decl.hpp"
 #include "scanner.hpp"
 
 #ifdef DEBUG_PRINT_CODE
@@ -102,6 +103,10 @@ static void number() {
     } else {
         error("Invalid number format.");
     }
+}
+
+static void string() {
+    emitConstant(objValue(copyString(parser.getPrev().start + 1, parser.getPrev().length - 2).get()));
 }
 
 static void grouping() {
@@ -238,7 +243,7 @@ const std::array<ParseRule, TokenTypeCount> rules = {{
     {nullptr, binary, Precedence::comparison}, // TOKEN_LESS
     {nullptr, binary, Precedence::comparison}, // TOKEN_LESS_EQUAL
     {nullptr, nullptr, Precedence::none}, // TOKEN_IDENTIFIER
-    {nullptr, nullptr, Precedence::none}, // TOKEN_STRING
+    {string, nullptr, Precedence::none}, // TOKEN_STRING
     {number, nullptr, Precedence::none}, // TOKEN_NUMBER
     {nullptr, nullptr, Precedence::none}, // TOKEN_AND
     {nullptr, nullptr, Precedence::none}, // TOKEN_CLASS

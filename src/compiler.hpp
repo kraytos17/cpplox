@@ -31,26 +31,23 @@ struct ParseRule {
 
 class Parser {
 public:
-    Parser() = default;
-    ~Parser() = default;
+    Token getCurrent() const { return m_current; }
+    void setCurrent(const Token& token) { m_current = token; }
 
-    Token getCurrent() const { return current; }
-    void setCurrent(const Token& token) { current = token; }
+    Token getPrev() const { return m_prev; }
+    void setPrev(const Token& token) { m_prev = token; }
 
-    Token getPrev() const { return prev; }
-    void setPrev(const Token& token) { prev = token; }
+    bool hadError() const { return m_hadErrorFlag; }
+    void setHadError(bool flag) { m_hadErrorFlag = flag; }
 
-    bool hadError() const { return hadErrorFlag; }
-    void setHadError(bool flag) { hadErrorFlag = flag; }
-
-    bool panicMode() const { return panicModeFlag; }
-    void setPanicMode(bool flag) { panicModeFlag = flag; }
+    bool panicMode() const { return m_panicModeFlag; }
+    void setPanicMode(bool flag) { m_panicModeFlag = flag; }
 
 private:
-    Token current{};
-    Token prev{};
-    bool hadErrorFlag{};
-    bool panicModeFlag{};
+    Token m_current{};
+    Token m_prev{};
+    bool m_hadErrorFlag{};
+    bool m_panicModeFlag{};
 };
 
 namespace Parsers {

@@ -1,84 +1,52 @@
+#include <cstring>
 #include "object.hpp"
 #include "inline_decl.hpp"
 #include "value.hpp"
 
-constexpr ObjType getObjType(const Obj& obj) noexcept { return obj.type; }
-
-constexpr bool isObjType(const Value& value, ObjType type) noexcept {
-    return isObj(value) && (asObj(value)->type == type);
-}
-
-constexpr bool isObjString(const Value& value) noexcept { return isObjType(value, ObjType::obj_string); }
-
-ObjString::ObjString(std::string_view str) : obj{ObjType::obj_string}, length{str.size()} {
-    if (length <= SSO_THRESHOLD) {
-        std::memcpy(sso_string.data(), str.data(), length);
-        sso_string[length] = '\0';
+ObjString::ObjString(std::string_view str) : Obj(ObjType::obj_string), m_length(str.size()) {
+    if (isSmallString()) {
+        std::memcpy(m_ssoString.data(), str.data(), m_length);
+        m_ssoString[m_length] = '\0';
     } else {
-        chars = new char[length + 1];
-        std::memcpy(chars, str.data(), length);
-        chars[length] = '\0';
+        m_chars = std::make_unique<char[]>(m_length + 1);
+        std::memcpy(m_chars.get(), str.data(), m_length);
+        m_chars[m_length] = '\0';
     }
 }
 
-ObjString::~ObjString() {
-    if ((length > SSO_THRESHOLD) && chars) {
-        delete[] chars;
-    }
-}
-
-ObjString::ObjString(const ObjString& other) : obj{other.obj}, length{other.length} {
-    if (length <= SSO_THRESHOLD) {
-        std::memcpy(sso_string.data(), other.sso_string.data(), length + 1);
+ObjString::ObjString(const ObjString& other) : Obj(ObjType::obj_string), m_length(other.m_length) {
+    if (isSmallString()) {
+        std::memcpy(m_ssoString.data(), other.m_ssoString.data(), m_length + 1);
     } else {
-        chars = new char[length + 1];
-        std::memcpy(chars, other.chars, length + 1);
+        m_chars = std::make_unique<char[]>(m_length + 1);
+        std::memcpy(m_chars.get(), other.m_chars.get(), m_length + 1);
     }
-}
-
-ObjString::ObjString(ObjString&& other) noexcept : obj{other.obj}, length(other.length), chars{other.chars} {
-    if (length <= SSO_THRESHOLD) {
-        std::memcpy(sso_string.data(), other.sso_string.data(), length + 1);
-    }
-    other.chars = nullptr;
 }
 
 ObjString& ObjString::operator=(const ObjString& other) {
     if (this != &other) {
-        if (length > SSO_THRESHOLD) {
-            delete[] chars;
-        }
-        length = other.length;
-        if (length <= SSO_THRESHOLD) {
-            std::memcpy(sso_string.data(), other.sso_string.data(), length + 1);
+        m_length = other.m_length;
+        if (isSmallString()) {
+            std::memcpy(m_ssoString.data(), other.m_ssoString.data(), m_length + 1);
         } else {
-            chars = new char[length + 1];
-            std::memcpy(chars, other.chars, length + 1);
+            m_chars = std::make_unique<char[]>(m_length + 1);
+            std::memcpy(m_chars.get(), other.m_chars.get(), m_length + 1);
         }
     }
+
     return *this;
 }
 
-ObjString& ObjString::operator=(ObjString&& other) noexcept {
-    if (this != &other) {
-        if (length > SSO_THRESHOLD) {
-            delete[] chars;
-        }
-        length = other.length;
-        if (length <= SSO_THRESHOLD) {
-            std::memcpy(sso_string.data(), other.sso_string.data(), length + 1);
-        } else {
-            chars = other.chars;
-            other.chars = nullptr;
-        }
-    }
-    return *this;
+inline constexpr bool isObjType(const Value& value, ObjType type) noexcept {
+    return isObj(value) && (asObj(value)->getType() == type);
 }
 
-std::string_view ObjString::getChars() const noexcept {
-    if (length <= SSO_THRESHOLD) {
-        return std::string_view(sso_string.data(), length);
-    } else {
-        return std::string_view(chars, length);
-    }
+inline constexpr bool isObjString(const Value& value) noexcept { return isObjType(value, ObjType::obj_string); }
+
+std::unique_ptr<ObjString> copyString(const char* chars, int length) {
+    auto heapChars = std::make_unique<char[]>(length + 1);
+    std::memcpy(heapChars.get(), chars, length);
+    heapChars[length] = '\0';
+
+    return std::make_unique<ObjString>(std::string_view(heapChars.get(), length));
 }

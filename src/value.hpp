@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <cstddef>
 #include <variant>
 #include <vector>
@@ -19,8 +18,9 @@ struct Value {
 struct ValueArray {
     std::vector<Value> values{};
 
-    ValueArray() noexcept;
-    ~ValueArray() noexcept;
+    ValueArray() noexcept : values(){}
+    ValueArray(const ValueArray& other) = default;
+    ~ValueArray() noexcept { freeValueArray(); }
 
     constexpr size_t count() const noexcept { return values.size(); }
     constexpr size_t capacity() const noexcept { return values.capacity(); }
