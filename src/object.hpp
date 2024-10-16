@@ -10,10 +10,6 @@ struct Obj {
     ObjType type{};
 };
 
-ObjType getObjType(const Obj& obj) noexcept;
-bool isObjType(const Value& value, ObjType type) noexcept;
-bool isObjString(const Value& value) noexcept;
-
 struct ObjString {
     static constexpr auto SSO_THRESHOLD = 23;
 

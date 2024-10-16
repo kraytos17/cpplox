@@ -30,6 +30,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     src/object.hpp
     src/object.cpp
     src/forward_decl.hpp
+    src/inline_decl.hpp
 )
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

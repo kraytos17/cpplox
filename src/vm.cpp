@@ -9,7 +9,7 @@
 #include "common.hpp"
 #include "compiler.hpp"
 #include "debug.hpp"
-#include "value.hpp"
+#include "inline_decl.hpp"
 
 using namespace VmInstance;
 
@@ -61,22 +61,6 @@ void binaryOp(Op op) {
 }
 
 static bool isFalsey(const Value& value) { return isNil(value) || (isBool(value) && !asBool(value)); }
-bool valuesEq(Value a, Value b) {
-    if (a.type != b.type) {
-        return false;
-    }
-
-    switch (a.type) {
-        case ValueType::val_bool:
-            return asBool(a) == asBool(b);
-        case ValueType::val_nil:
-            return true;
-        case ValueType::val_number:
-            return asNumber(a) == asNumber(b);
-        default:
-            return false;
-    }
-}
 
 InterpretResult VM::run() {
     while (true) {

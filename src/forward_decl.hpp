@@ -15,6 +15,3 @@ enum class ValueType : uint8_t {
     val_number,
     val_obj,
 };
-
-bool isObj(const Value& value) noexcept;
-Obj* asObj(const Value& value);

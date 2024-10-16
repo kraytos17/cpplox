@@ -1,11 +1,14 @@
 #include "object.hpp"
+#include "inline_decl.hpp"
 #include "value.hpp"
 
-ObjType getObjType(const Obj& obj) noexcept { return obj.type; }
+constexpr ObjType getObjType(const Obj& obj) noexcept { return obj.type; }
 
-bool isObjType(const Value& value, ObjType type) noexcept { return isObj(value) && (asObj(value)->type == type); }
+constexpr bool isObjType(const Value& value, ObjType type) noexcept {
+    return isObj(value) && (asObj(value)->type == type);
+}
 
-bool isObjString(const Value& value) noexcept { return isObjType(value, ObjType::obj_string); }
+constexpr bool isObjString(const Value& value) noexcept { return isObjType(value, ObjType::obj_string); }
 
 ObjString::ObjString(std::string_view str) : obj{ObjType::obj_string}, length{str.size()} {
     if (length <= SSO_THRESHOLD) {
