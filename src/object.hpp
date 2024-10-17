@@ -16,6 +16,7 @@ protected:
 
 private:
     ObjType m_type{};
+    Obj* m_next{nullptr};
 };
 
 class ObjString : public Obj {
@@ -29,7 +30,7 @@ public:
 
     constexpr size_t getLength() const noexcept { return m_length; }
 
-    constexpr auto getStringView() const noexcept {
+    constexpr auto getChars() const noexcept {
         return isSmallString() ? std::string_view(m_ssoString.data(), m_length)
                                : std::string_view(m_chars.get(), m_length);
     }
@@ -47,3 +48,4 @@ private:
 };
 
 std::unique_ptr<ObjString> copyString(const char* chars, int length);
+void printObj(const Value& value);

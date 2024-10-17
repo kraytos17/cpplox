@@ -1,5 +1,7 @@
-#include <cstring>
 #include "object.hpp"
+#include <cstring>
+#include <iostream>
+#include "forward_decl.hpp"
 #include "inline_decl.hpp"
 #include "value.hpp"
 
@@ -37,16 +39,18 @@ ObjString& ObjString::operator=(const ObjString& other) {
     return *this;
 }
 
-inline constexpr bool isObjType(const Value& value, ObjType type) noexcept {
-    return isObj(value) && (asObj(value)->getType() == type);
-}
-
-inline constexpr bool isObjString(const Value& value) noexcept { return isObjType(value, ObjType::obj_string); }
-
 std::unique_ptr<ObjString> copyString(const char* chars, int length) {
     auto heapChars = std::make_unique<char[]>(length + 1);
     std::memcpy(heapChars.get(), chars, length);
     heapChars[length] = '\0';
 
     return std::make_unique<ObjString>(std::string_view(heapChars.get(), length));
+}
+
+void printObj(const Value& value) {
+    switch (asObj(value)->getType()) {
+        case ObjType::obj_string:
+            std::cout << asCString(value);
+            break;
+    }
 }

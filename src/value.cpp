@@ -1,6 +1,7 @@
 #include "value.hpp"
 #include <format>
 #include <iostream>
+#include "forward_decl.hpp"
 #include "inline_decl.hpp"
 
 void ValueArray::writeValue(Value value) { values.push_back(value); }
@@ -20,6 +21,9 @@ void printValue(Value value) {
             break;
         case ValueType::val_number:
             std::cout << std::format("{:g}", asNumber(value));
+            break;
+        case ValueType::val_obj:
+            printObj(value);
             break;
         default:
             return;

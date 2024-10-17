@@ -1,8 +1,10 @@
 #include "vm.hpp"
+#include <cstring>
 #include <format>
 #include <functional>
 #include <iostream>
 #include <span>
+#include <string>
 #include <string_view>
 #include "chunk.hpp"
 #include "common.hpp"
@@ -12,8 +14,8 @@
 
 using namespace VmInstance;
 
-void initVM() { vmInstance.resetStack(); }
-void freeVM() {}
+constexpr void initVM() { vm.resetStack(); }
+constexpr void freeVM() {}
 
 // InterpretResult VM::interpret(Chunk* chunk) {
 //     this->chunk = chunk;
@@ -25,27 +27,41 @@ static void runtimeError(const std::string& message) {
     std::string errorMessage = std::format("Runtime Error: {}", message);
     std::cerr << errorMessage << "\n";
 
-    size_t instruction = vmInstance.ip - vmInstance.chunk->code.data() - 1;
-    int line = vmInstance.chunk->lines[instruction];
+    size_t instruction = vm.ip - vm.chunk->code.data() - 1;
+    int line = vm.chunk->lines[instruction];
 
     std::cerr << std::format("[line {}] in script\n", line);
-    vmInstance.resetStack();
+    vm.resetStack();
 }
 
 template<typename... Args>
-static void formatRuntimeError(const std::string& fmt, Args&&... args) {
-    std::string formattedMessage = std::format(fmt, std::forward<Args>(args)...);
+static void formatRuntimeError(std::string_view fmt, Args&&... args) {
+    std::string formattedMessage = std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...));
     runtimeError(formattedMessage);
 }
 
-static Value peek(int distance) { return vmInstance.top[-1 - distance]; }
 
-void VM::push(Value value) {
+static Value peek(int distance) { return vm.top[-1 - distance]; }
+static void concatenate() {
+    auto b = asObjString(vm.pop());
+    auto a = asObjString(vm.pop());
+
+    auto len = a->getLength() + b->getLength();
+    auto chars = new char[len + 1];
+    std::memcpy(chars, a->getChars().data(), a->getLength());
+    std::memcpy(chars + a->getLength(), b->getChars().data(), b->getLength());
+    chars[len] = '\0';
+
+    auto res = ObjString(std::string_view(chars, len));
+    vm.push(objValue(&res));
+}
+
+constexpr void VM::push(Value value) {
     *top = value;
     top++;
 }
 
-Value VM::pop() {
+constexpr Value VM::pop() {
     top--;
     return *top;
 }
@@ -53,12 +69,12 @@ Value VM::pop() {
 template<typename Op>
 void binaryOp(Op op) {
     if (!isNumber(peek(0)) || !isNumber(peek(1))) {
-        runtimeError("Operands must be numbers.");
+        formatRuntimeError("Operands must be numbers.");
     }
 
-    auto b = asNumber(vmInstance.pop());
-    auto a = asNumber(vmInstance.pop());
-    vmInstance.push(numberValue(op(a, b)));
+    auto b = asNumber(vm.pop());
+    auto a = asNumber(vm.pop());
+    vm.push(numberValue(op(a, b)));
 }
 
 static bool isFalsey(const Value& value) { return isNil(value) || (isBool(value) && !asBool(value)); }
@@ -98,9 +114,25 @@ InterpretResult VM::run() {
                 push(boolValue(valuesEq(a, b)));
                 break;
             }
-            case OpCode::add:
-                binaryOp(std::plus<>());
+            case OpCode::greater:
+                binaryOp(std::greater<>());
                 break;
+            case OpCode::less:
+                binaryOp(std::less<>());
+                break;
+            case OpCode::add: {
+                if (isObjString(peek(0)) && isObjString(peek(1))) {
+                    concatenate();
+                } else if (isNumber(peek(0)) && isNumber(peek(1))) {
+                    auto b = asNumber(pop());
+                    auto a = asNumber(pop());
+                    push(numberValue(a + b));
+                } else {
+                    formatRuntimeError("Operands must be two numbers or two strings");
+                    return InterpretResult::runtime_error;
+                }
+                break;
+            }
             case OpCode::subtract:
                 binaryOp(std::minus<>());
                 break;
@@ -115,7 +147,7 @@ InterpretResult VM::run() {
                 break;
             case OpCode::negate: {
                 if (!isNumber(peek(0))) {
-                    runtimeError("Operand must be a number.");
+                    formatRuntimeError("Operand must be a number.");
                     return InterpretResult::runtime_error;
                 }
                 double value = asNumber(pop());
@@ -139,9 +171,9 @@ InterpretResult interpret(std::string_view source) {
         return InterpretResult::compile_error;
     }
 
-    vmInstance.chunk = &chunk;
-    vmInstance.ip = vmInstance.chunk->code.data();
-    InterpretResult res = vmInstance.run();
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code.data();
+    InterpretResult res = vm.run();
 
     return res;
 }
