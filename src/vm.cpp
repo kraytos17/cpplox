@@ -2,7 +2,7 @@
 #include <cstring>
 #include <format>
 #include <functional>
-#include <iostream>
+#include <print>
 #include <span>
 #include <string>
 #include <string_view>
@@ -14,20 +14,13 @@
 
 using namespace VmInstance;
 
-// InterpretResult VM::interpret(Chunk* chunk) {
-//     this->chunk = chunk;
-//     ip = chunk->code.data();
-//     return run();
-// }
-
 static void runtimeError(const std::string& message) {
-    std::string errorMessage = std::format("Runtime Error: {}", message);
-    std::cerr << errorMessage << "\n";
+    std::println(stderr, "Runtime Error: {}", message);
 
     size_t instruction = vm.ip - vm.chunk->code.data() - 1;
     int line = vm.chunk->lines[instruction];
 
-    std::cerr << std::format("[line {}] in script\n", line);
+    std::println(stderr, "[line {}] in script", line);
     vm.resetStack();
 }
 
@@ -36,7 +29,6 @@ static void formatRuntimeError(std::string_view fmt, Args&&... args) {
     std::string formattedMessage = std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...));
     runtimeError(formattedMessage);
 }
-
 
 static Value peek(int distance) { return vm.top[-1 - distance]; }
 static void concatenate() {
@@ -79,14 +71,14 @@ static bool isFalsey(const Value& value) { return isNil(value) || (isBool(value)
 InterpretResult VM::run() {
     while (true) {
 #ifdef DEBUG_TRACE_EXECUTION
-        std::cout << "        ";
+        std::print("        ");
         for (const auto& value: std::span(stack.data(), top)) {
-            std::cout << "[ ";
+            std::print("[ ");
             printValue(value);
-            std::cout << " ]";
+            std::print(" ]");
         }
 
-        std::cout << '\n';
+        std::println();
         disassembleInstruction(*this->chunk, static_cast<int>(ip - chunk->code.data()));
 #endif
         uint8_t instruction = readByte();
@@ -153,7 +145,7 @@ InterpretResult VM::run() {
             }
             case OpCode::ret:
                 printValue(pop());
-                std::cout << '\n';
+                std::println();
                 return InterpretResult::ok;
             default:
                 return InterpretResult::compile_error;

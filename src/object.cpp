@@ -1,6 +1,6 @@
 #include "object.hpp"
 #include <cstring>
-#include <iostream>
+#include <print>
 #include "forward_decl.hpp"
 #include "inline_decl.hpp"
 #include "value.hpp"
@@ -50,7 +50,7 @@ std::unique_ptr<ObjString> copyString(const char* chars, int length) {
 void printObj(const Value& value) {
     switch (asObj(value)->getType()) {
         case ObjType::obj_string:
-            std::cout << asCString(value);
+            std::print("{}", asCString(value));
             break;
     }
 }

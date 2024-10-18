@@ -4,18 +4,21 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <print>
+#include <span>
+#include <string_view>
 #include "vm.hpp"
 
 void repl() {
     std::array<char, 1024> buffer{};
     while (true) {
-        std::cout << "> ";
+        std::print("> ");
         if (!std::cin.getline(buffer.data(), buffer.size())) {
-            std::cout << '\n';
+            std::println();
             break;
         }
 
-        std::string line{buffer.data()};
+        std::string_view line{buffer.data()};
         [[maybe_unused]] auto x = interpret(line);
     }
 }
@@ -23,21 +26,20 @@ void repl() {
 std::optional<std::string> readFile(const std::string& filepath) {
     std::ifstream file(filepath, std::ios::binary | std::ios::ate);
     if (!file) {
-        std::cerr << std::format("Failed to open file: {}\n", filepath);
+        std::println(stderr, "Failed to open file: {}", filepath);
         return std::nullopt;
     }
 
     auto fileSize = file.tellg();
     if (fileSize == -1) {
-        std::cerr << std::format("Could not determine file size: {}\n", filepath);
+        std::println(stderr, "Could not determine file size: {}", filepath);
         return std::nullopt;
     }
 
-    file.seekg(fileSize, std::ios::beg);
-    std::string buffer;
-    buffer.resize(static_cast<std::size_t>(fileSize));
+    file.seekg(0, std::ios::beg);
+    std::string buffer(static_cast<std::size_t>(fileSize), '\0');
     if (!file.read(buffer.data(), fileSize)) {
-        std::cerr << std::format("Could not read file: {}\n", filepath);
+        std::println(stderr, "Could not read file: {}", filepath);
         return std::nullopt;
     }
 
@@ -47,7 +49,7 @@ std::optional<std::string> readFile(const std::string& filepath) {
 int runFile(const std::string& filepath) {
     auto source = readFile(filepath);
     if (!source) {
-        std::cerr << "Failed to read file: " << filepath << '\n';
+        std::println(stderr, "Failed to read file: {}", filepath);
         return 74;
     }
 
@@ -63,17 +65,18 @@ int runFile(const std::string& filepath) {
     return 0;
 }
 
-
 auto main(int argc, const char* argv[]) -> int {
     initVM();
 
     int exitCode{0};
-    if (argc == 1) {
+    std::span args(argv, static_cast<std::size_t>(argc));
+
+    if (args.size() == 1) {
         repl();
-    } else if (argc == 2) {
-        exitCode = runFile(argv[1]);
+    } else if (args.size() == 2) {
+        exitCode = runFile(args[1]);
     } else {
-        std::cerr << "Usage: clox [path]\n";
+        std::println(stderr, "Usage: clox [path]");
         exitCode = 64;
     }
 

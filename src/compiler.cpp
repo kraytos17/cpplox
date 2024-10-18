@@ -2,9 +2,9 @@
 #include <charconv>
 #include <cstdint>
 #include <format>
-#include <iostream>
 #include <limits>
 #include <memory>
+#include <print>
 #include <string_view>
 #include "chunk.hpp"
 #include "common.hpp"
@@ -38,13 +38,13 @@ static void handleError(F&& errorFunc, const Token& token, std::string_view msg)
 }
 
 static void errAt(const Token& token, std::string_view msg) {
-    std::cerr << std::format("[line {}] Error", token.line);
+    std::print(stderr, "[line {}] Error", token.line);
     if (token.type == TokenType::eof) {
-        std::cerr << " at end";
+        std::print(stderr, " at end");
     } else if (token.type != TokenType::err) {
-        std::cerr << std::format(" at '{}'", std::string_view(token.start, token.length));
+        std::print(stderr, " at '{}'", std::string_view(token.start, token.length));
     }
-    std::cerr << std::format(": {}\n", msg);
+    std::println(stderr, ": {}", msg);
 }
 
 static void error(std::string_view msg) { handleError(errAt, parser.getPrev(), msg); }

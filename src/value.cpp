@@ -1,6 +1,5 @@
 #include "value.hpp"
-#include <format>
-#include <iostream>
+#include <print>
 #include "forward_decl.hpp"
 #include "inline_decl.hpp"
 
@@ -14,13 +13,13 @@ void ValueArray::freeValueArray() {
 void printValue(Value value) {
     switch (value.type) {
         case ValueType::val_bool:
-            std::cout << std::format("{}", asBool(value) ? "true" : "false");
+            std::print("{}", asBool(value) ? "true" : "false");
             break;
         case ValueType::val_nil:
-            std::cout << "nil";
+            std::print("nil");
             break;
         case ValueType::val_number:
-            std::cout << std::format("{:g}", asNumber(value));
+            std::print("{:g}", asNumber(value));
             break;
         case ValueType::val_obj:
             printObj(value);
