@@ -37,6 +37,8 @@ namespace VmInstance {
     inline constinit VM vm{};
 } // namespace VmInstance
 
-constexpr void initVM();
-constexpr void freeVM();
 [[nodiscard]] InterpretResult interpret(std::string_view source);
+
+constexpr void initVM() { VmInstance::vm.resetStack(); }
+
+constexpr void freeVM() {}

@@ -14,9 +14,6 @@
 
 using namespace VmInstance;
 
-constexpr void initVM() { vm.resetStack(); }
-constexpr void freeVM() {}
-
 // InterpretResult VM::interpret(Chunk* chunk) {
 //     this->chunk = chunk;
 //     ip = chunk->code.data();
