@@ -8,15 +8,18 @@
 
 class Obj {
 public:
-    constexpr ObjType getType() const noexcept { return m_type; }
     virtual ~Obj() = default;
+    constexpr ObjType getType() const noexcept { return m_type; }
+    constexpr Obj* getNext() const noexcept { return m_next; }
+    constexpr void setNext(Obj* next) noexcept { m_next = next; }
 
 protected:
     explicit Obj(ObjType t) : m_type{t} {}
+    Obj* m_next{nullptr};
 
 private:
     ObjType m_type{};
-    Obj* m_next{nullptr};
+    //friend class Vm;
 };
 
 class ObjString : public Obj {
@@ -41,6 +44,7 @@ private:
     static constexpr auto SSO_THRESHOLD = 23;
 
     std::size_t m_length{0};
+    std::size_t m_chars_cap{0};
     std::unique_ptr<char[]> m_chars{nullptr};
     std::array<char, SSO_THRESHOLD + 1> m_ssoString;
 

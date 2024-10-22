@@ -32,17 +32,16 @@ static void formatRuntimeError(std::string_view fmt, Args&&... args) {
 
 static Value peek(int distance) { return vm.top[-1 - distance]; }
 static void concatenate() {
-    auto b = asObjString(vm.pop());
-    auto a = asObjString(vm.pop());
+    const auto* b = asObjString(vm.pop());
+    const auto* a = asObjString(vm.pop());
 
-    auto len = a->getLength() + b->getLength();
-    auto chars = new char[len + 1];
-    std::memcpy(chars, a->getChars().data(), a->getLength());
-    std::memcpy(chars + a->getLength(), b->getChars().data(), b->getLength());
-    chars[len] = '\0';
+    std::string concatenated;
+    concatenated.reserve(a->getLength() + b->getLength());
+    concatenated.append(a->getChars());
+    concatenated.append(b->getChars());
 
-    auto res = ObjString(std::string_view(chars, len));
-    vm.push(objValue(&res));
+    ObjString* res = new ObjString(std::move(concatenated));
+    vm.push(objValue(res));
 }
 
 constexpr void VM::push(Value value) {
@@ -165,4 +164,9 @@ InterpretResult interpret(std::string_view source) {
     InterpretResult res = vm.run();
 
     return res;
+}
+
+void VM::addObject(Obj* obj) {
+    obj->setNext(objects);
+    objects = obj;
 }

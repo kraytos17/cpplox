@@ -13,7 +13,8 @@ enum class InterpretResult : uint8_t {
     runtime_error,
 };
 
-struct VM {
+class VM {
+public:
     Chunk* chunk{nullptr};
     uint8_t* ip{nullptr};
     std::array<Value, STACK_MAX> stack{};
@@ -31,6 +32,7 @@ struct VM {
 
     // [[nodiscard]] InterpretResult interpret(Chunk* chunk);
     [[nodiscard]] InterpretResult run();
+    void addObject(Obj* obj);
 };
 
 namespace VmInstance {
